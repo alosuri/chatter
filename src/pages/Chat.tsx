@@ -34,7 +34,7 @@ export default function Chat() {
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (!user) {
-        navigate("/login");
+        navigate("/chatter/login");
       }
     })
   }, [])

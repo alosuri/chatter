@@ -8,10 +8,10 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route index element={<Chat />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/chat" element={<Chat />} />
+        <Route index path="/chatter" element={<Chat />} />
+        <Route path="/chatter/login" element={<Login />} />
+        <Route path="/chatter/register" element={<Register />} />
+        <Route path="/chatter/chat" element={<Chat />} />
         <Route path="*" element={<NoPage />} />
       </Routes>
     </BrowserRouter>

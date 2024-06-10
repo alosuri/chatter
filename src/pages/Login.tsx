@@ -9,7 +9,7 @@ export default function Login() {
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        navigate("/");
+        navigate("/chatter");
       }
     });
   }, []);
@@ -27,7 +27,9 @@ export default function Login() {
 
       // Signed in
       const user = userCredential.user;
-      navigate("/chat");
+      if (user) {
+        navigate("/chatter/chat");
+      }
     } catch (error) {
       alert(error);
     }
@@ -56,7 +58,7 @@ export default function Login() {
             required
             className="md:w-96 w-80 p-2 rounded-md bg-[#363638] outline-none text-white"
           />
-          <Link to={"/register"} className="text-[#00bd7e]">
+          <Link to={"/chatter/register"} className="text-[#00bd7e]">
             Don't have an account? Click here!
           </Link>
           <button

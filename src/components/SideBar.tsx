@@ -56,7 +56,7 @@ function SideBar({ chatUid }: { chatUid: any }) {
   const signOutUser = () => {
     signOut(auth).then(() => {
       console.log("success!");
-      navigate("/login");
+      navigate("/chatter/login");
     }).catch((error) => {
       console.error("Sign out error:", error);
     });
