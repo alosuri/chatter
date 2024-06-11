@@ -40,7 +40,7 @@ export default function Chat() {
   }, [])
 
   return (
-    <main className="bg-[#232327] h-screen w-screen flex flex-row">
+    <main className="bg-[#232327] h-screen w-screen flex flex-row overflow-x-hidden">
       {!chatUid ? <div className="block"><SideBar chatUid={setChatUid} /></div> : <div className="hidden md:block" ><SideBar chatUid={setChatUid} /></div>}
       <ChangeUid></ChangeUid>
     </main>

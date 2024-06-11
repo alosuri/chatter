@@ -5,7 +5,6 @@ import { useNavigate } from "react-router-dom";
 import { usersCollection } from "../config/controller";
 import { where, query, getDocs, setDoc, doc, onSnapshot } from "firebase/firestore";
 import FriendsList from "./FriendsList";
-import { getDownloadURL, getStorage, ref } from "firebase/storage";
 
 function SideBar({ chatUid }: { chatUid: any }) {
   const [email, setEmail] = useState<string>();
@@ -14,9 +13,7 @@ function SideBar({ chatUid }: { chatUid: any }) {
   const [photo, setPhoto] = useState<string>('');
   const search = useRef<HTMLInputElement>(null);
   const [searchResult, setSearchResult] = useState<any>(null);
-  const [searchResultImage, setSearchResultImage] = useState<string>('');
   const [searchResultUid, setSearchResultUid] = useState<string>('');
-
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -24,12 +21,7 @@ function SideBar({ chatUid }: { chatUid: any }) {
         setUid(user?.uid || '');
         setEmail(user?.email || '');
         setUsername(user?.displayName || '');
-
-        if (user?.photoURL) {
-          const storage = getStorage();
-          const url = await getDownloadURL(ref(storage, user.photoURL));
-          setPhoto(url);
-        }
+        setPhoto(user?.photoURL || '');
 
         const userDocRef = doc(db, "users", user.uid);
         onSnapshot(userDocRef, (doc) => {
@@ -37,6 +29,7 @@ function SideBar({ chatUid }: { chatUid: any }) {
           if (userData) {
             setUsername(userData.username);
             setEmail(userData.email);
+            setPhoto(userData.photoURL);
           }
         });
       }
@@ -45,13 +38,6 @@ function SideBar({ chatUid }: { chatUid: any }) {
   }, []);
 
   const navigate = useNavigate();
-
-  const getImage = async (image: string) => {
-    setSearchResultImage('');
-    const storage = getStorage();
-    const url = await getDownloadURL(ref(storage, image));
-    setSearchResultImage(url);
-  };
 
   const signOutUser = () => {
     signOut(auth).then(() => {
@@ -71,7 +57,6 @@ function SideBar({ chatUid }: { chatUid: any }) {
       if (doc.data().email !== email) {
         setSearchResult(doc.data());
         setSearchResultUid(doc.id);
-        getImage(doc.data().photoURL);
       }
     });
   }
@@ -81,10 +66,10 @@ function SideBar({ chatUid }: { chatUid: any }) {
       return (
         <div className="flex flex-row py-5 gap-5 items-center justify-between">
           <div className="flex flex-row gap-5">
-            {searchResultImage ? <img src={searchResultImage} alt="" className="w-14 aspect-square object-cover rounded-lg" /> : <div className="loader"> </div>}
-            <div>
-              <p className="text-white">{searchResult.username}</p>
-              <p className="text-white">{searchResult.email}</p>
+            {searchResult ? <img src={searchResult.photoURL} alt="" className="w-14 aspect-square object-cover rounded-lg" /> : <div className="loader"> </div>}
+            <div className="w-32" >
+              <p className="text-white truncate">{searchResult.username}</p>
+              <p className="text-white truncate">{searchResult.email}</p>
             </div>
           </div>
           <button className="bg-[#588c65] p-2 rounded-md" onClick={addFriend}>
@@ -112,12 +97,12 @@ function SideBar({ chatUid }: { chatUid: any }) {
 
   return (
     <div className="w-screen md:w-[400px] h-screen bg-[#232327] p-3 border-r-[1px] border-[#4d4d4d] border-opacity-80">
-      <div className="flex flex-row items-center justify-between p-5">
+      <div className="flex flex-row items-center justify-between py-5">
         <div className="flex flex-row items-center">
-          {photo ? <img src={photo} className="w-24 h-24 object-cover rounded-md aspect-square" alt="User profile" /> : <div className="loader"></div>}
-          <div className="p-5">
-            <p className="text-white font-semibold text-2xl">{username}</p>
-            <p className="text-gray-300 font-normal text-md">{email}</p>
+          {photo ? <img src={photo} className="w-20 h-20 md:w-24 md:h-24 object-cover rounded-md aspect-square" alt="User profile" /> : <div className="loader"></div>}
+          <div className="p-5 w-40">
+            <p className="text-white font-semibold text-2xl truncate">{username}</p>
+            <p className="text-gray-300 font-normal text-md truncate">{email}</p>
           </div>
         </div>
         <button onClick={signOutUser} className="bg-[#588c65] px-5 py-2 rounded-md font-semibold text-white">Logout</button>

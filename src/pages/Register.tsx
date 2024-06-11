@@ -9,10 +9,10 @@ import { auth, storage } from "../config/controller";
 import { db } from "../config/controller";
 import { setDoc, doc } from "firebase/firestore";
 import {
+  getDownloadURL,
   ref,
   uploadBytes,
 } from "firebase/storage";
-import { firebaseConfig } from "../config/firebase";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -64,7 +64,7 @@ export default function Login() {
       if (file) {
         const storageRef = ref(storage, "images/" + user.uid + "/" + String(Date.now()) + file.name);
         const snapshot = await uploadBytes(storageRef, file);
-        const photoURL = "gs://" + firebaseConfig.storageBucket + "/" + snapshot.metadata.fullPath;
+        const photoURL = await getDownloadURL(snapshot.ref);
 
         await updateProfile(user, {
           displayName: target.username.value,
@@ -105,22 +105,30 @@ export default function Login() {
             name="email"
             className="md:w-96 w-80 p-2 rounded-md bg-[#363638] outline-none text-white"
           />
-          <div className="flex md:flex-row flex-col justify-between w-96 items-center gap-5">
+          <input
+            placeholder="Password..."
+            required
+            type="password"
+            name="password"
+            className="md:w-96 w-80 p-2 rounded-md bg-[#363638] outline-none text-white"
+          />
+          <label className="rounded-md bg-[#363638] outline-none text-white h-12 p-5 gap-2 flex items-center justify-center"
+          > <svg xmlns="http://www.w3.org/2000/svg" className="icon icon-tabler icon-tabler-photo" width="30" height="30" viewBox="0 0 24 24" strokeWidth="1" stroke="#fff" fill="none" strokeLinecap="round" strokeLinejoin="round">
+              <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+              <path d="M15 8h.01" />
+              <path d="M3 6a3 3 0 0 1 3 -3h12a3 3 0 0 1 3 3v12a3 3 0 0 1 -3 3h-12a3 3 0 0 1 -3 -3v-12z" />
+              <path d="M3 16l5 -5c.928 -.893 2.072 -.893 3 0l5 5" />
+              <path d="M14 14l1 -1c.928 -.893 2.072 -.893 3 0l3 3" />
+            </svg>
+            <p>Choose profile picture (required)</p>
             <input
-              placeholder="Password..."
+              className="hidden"
+              type="file"
+              onChange={handleChange}
+              name="file"
               required
-              type="password"
-              name="password"
-              className="md:w-44 w-80 p-2 rounded-md bg-[#363638] outline-none text-white"
             />
-            <input
-              placeholder="Repeat password..."
-              required
-              type="password"
-              className="md:w-44 w-80 p-2 rounded-md bg-[#363638] outline-none text-white"
-            />
-          </div>
-          <input type="file" name="file" onChange={handleChange} required />
+          </label>
           <Link to={"/login"} className="text-[#00bd7e]">
             Already have an account? Click here!
           </Link>

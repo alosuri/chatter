@@ -2,7 +2,6 @@ import { collection, doc, getDoc, limit, onSnapshot, orderBy, query } from "fire
 import { auth, db } from "../config/controller";
 import { useEffect, useState } from "react";
 import { onAuthStateChanged } from "firebase/auth";
-import { getDownloadURL, getStorage, ref } from "firebase/storage";
 
 export default function FriendsList({ chatUid }: { chatUid: any }) {
   const [uid, setUid] = useState<string>();
@@ -45,14 +44,12 @@ export default function FriendsList({ chatUid }: { chatUid: any }) {
   }, [friends]);
 
   const fetchFriends = async (friendUids: any) => {
-    const storage = getStorage();
     const friendsData = await Promise.all(
       friendUids.map(async (friendUid: string) => {
         const docRef = doc(db, "users", friendUid);
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
-          const url = await getDownloadURL(ref(storage, docSnap.data().photoURL));
-          return { uid: docSnap.id, username: docSnap.data().username, email: docSnap.data().email, photo: url };
+          return { uid: docSnap.id, username: docSnap.data().username, email: docSnap.data().email, photo: docSnap.data().photoURL };
         } else {
           console.log("No such document!");
           return null;
@@ -98,7 +95,7 @@ export default function FriendsList({ chatUid }: { chatUid: any }) {
     <li key={index} className="flex flex-row pb-10 gap-5" onClick={() => openChat(element.uid)}>
       {element.photo ? <img src={element.photo} alt="" className="w-16 aspect-square object-cover rounded-lg" /> : <div className="loader"></div>}
       <div>
-        <p className="text-white font-semibold text-xl">{element.username}</p>
+        <p className="text-white font-semibold text-xl w-60 truncate">{element.username}</p>
         {lastMessages[element.uid] ? (
           lastMessages[element.uid].sender === String(uid) ? (
             <p className="text-gray-300 truncate w-60"><span className="text-yellow-500 font-bold">You: </span>{lastMessages[element.uid].message}</p>
@@ -106,7 +103,7 @@ export default function FriendsList({ chatUid }: { chatUid: any }) {
             <p className="text-gray-300 truncate w-60"><span className="text-green-500 font-bold">{element.username}: </span>{lastMessages[element.uid].message}</p>
           )
         ) : (
-          <p className="text-gray-300">Loading...</p>
+          <p className="text-gray-400">Start a new conversation...</p>
         )}
       </div>
     </li>
@@ -114,8 +111,8 @@ export default function FriendsList({ chatUid }: { chatUid: any }) {
 
   return (
     <div className="pt-5">
-      <ul className="overflow-auto md:h-[75vh] h-[70vh]">
-        {renderFriends}
+      <ul className="overflow-auto md:max-h-[75vh] max-h-[70vh] flex justify-center">
+        {(friends.length != 0) ? <div className="w-full">{renderFriends}</div> : <p className="text-gray-300 text-md max-w-80 text-center">Try searching for friends using their email addresses.</p>}
       </ul>
     </div>
   );

@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  background-color: #232327;
+}
+
 .bg-pattern {
   background-color: #232327;
   opacity: 0.8;

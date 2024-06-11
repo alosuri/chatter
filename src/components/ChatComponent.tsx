@@ -4,6 +4,7 @@ import { collection, addDoc, query, onSnapshot, serverTimestamp, orderBy, doc, g
 import { auth, db, storage } from "../config/controller";
 import { getDownloadURL, getStorage, ref, uploadBytes } from "firebase/storage";
 import { firebaseConfig } from "../config/firebase";
+import ImagePreview from "./ImagePreview";
 
 interface Message {
   message: string;
@@ -20,6 +21,7 @@ function ChatComponent({ friend, chatUid }: { friend: string, chatUid: any }) {
   const messagesList = useRef<HTMLDivElement>(null);
   const [username, setUsername] = useState<string>();
   const [profile, setProfile] = useState<string>();
+  const [ImagePreviewSrc, setImagePreviewSrc] = useState<string>();
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -60,10 +62,8 @@ function ChatComponent({ friend, chatUid }: { friend: string, chatUid: any }) {
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      const storage = getStorage();
-      const url = await getDownloadURL(ref(storage, docSnap.data().photoURL));
       setUsername(docSnap.data()?.username);
-      setProfile(url);
+      setProfile(docSnap.data().photoURL);
     } else {
       console.log("No such document!");
       return null;
@@ -112,14 +112,14 @@ function ChatComponent({ friend, chatUid }: { friend: string, chatUid: any }) {
     if (!element.image) {
       if (element.from === uid) {
         return (
-          <li key={index} className="flex flex-row flex-wrap w-full justify-end">
-            <a className="py-2 px-5 gap-5 bg-[#a3a3a3] w-fit rounded-xl md:max-w-[40vw] max-w-[60vw] break-all">{element.message}</a>
+          <li key={index} className="flex flex-row flex-wrap w-full justify-end py-2">
+            <a className="py-2 px-5 gap-5 bg-[#a3a3a3] w-fit rounded-xl md:max-w-[40vw] max-w-[60vw] hyphens-auto break-words">{element.message}</a>
           </li>
         );
       } else {
         return (
-          <li key={index} className="flex flex-row flex-wrap">
-            <a className="py-2 px-5 gap-5 bg-[#588c65] w-fit rounded-xl md:max-w-[40vw] max-w-[60vw] break-all">{element.message}</a>
+          <li key={index} className="flex flex-row flex-wrap py-2">
+            <a className="py-2 px-5 gap-5 bg-[#588c65] w-fit rounded-xl md:max-w-[40vw] max-w-[60vw] hyphens-auto break-all">{element.message}</a>
           </li>
         );
       }
@@ -128,9 +128,9 @@ function ChatComponent({ friend, chatUid }: { friend: string, chatUid: any }) {
       if (element.from === uid) {
         if (isImgUrl(element.message) == "photo") {
           return (
-            <li key={index} className="flex flex-row flex-wrap w-full justify-end">
+            <li key={index} className="flex flex-row flex-wrap w-full justify-end py-2">
               {imageUrls[element.message] ? (
-                <img src={imageUrls[element.message]} alt="Message Image" className="max-w-[60vw] md:max-w-[30vw] max-h-[40vh] border-[5px] border-[#a3a3a3] rounded-xl" />
+                <img src={imageUrls[element.message]} alt="Message Image" className="max-w-[60vw] md:max-w-[30vw] max-h-[40vh] rounded-xl" onClick={() => showImage(element.message)} />
               ) : (
                 <div className="flex justify-center items-center w-[60vw] md:w-[30vw] h-80 border-[5px] border-[#a3a3a3] bg-[#a3a3a3] rounded-xl"><div className="loader"></div></div>
               )}
@@ -139,9 +139,9 @@ function ChatComponent({ friend, chatUid }: { friend: string, chatUid: any }) {
         }
         else if (isImgUrl(element.message) == "video") {
           return (
-            <li key={index} className="flex flex-row flex-wrap w-full justify-end">
+            <li key={index} className="flex flex-row flex-wrap w-full justify-end py-2">
               {imageUrls[element.message] ? (
-                <video className="max-w-[60vw] md:max-w-[30vw] max-h-80 border-[5px] border-[#a3a3a3] rounded-xl" controls>
+                <video className="max-w-[60vw] md:max-w-[30vw] max-h-80 rounded-xl" controls>
                   <source src={imageUrls[element.message]} />
                 </video>
               ) : (
@@ -152,7 +152,7 @@ function ChatComponent({ friend, chatUid }: { friend: string, chatUid: any }) {
         }
         else if (isImgUrl(element.message) == "audio") {
           return (
-            <li key={index} className="flex flex-row flex-wrap w-full justify-end">
+            <li key={index} className="flex flex-row flex-wrap w-full justify-end py-2">
               {imageUrls[element.message] ? (
                 <video className="max-w-[60vw] max-h-40 rounded-xl" controls>
                   <source src={imageUrls[element.message]} />
@@ -167,9 +167,9 @@ function ChatComponent({ friend, chatUid }: { friend: string, chatUid: any }) {
       else {
         if (isImgUrl(element.message) == "photo") {
           return (
-            <li key={index} className="flex flex-row flex-wrap w-full">
+            <li key={index} className="flex flex-row flex-wrap w-full py-2">
               {imageUrls[element.message] ? (
-                <img src={imageUrls[element.message]} alt="Message Image" className="max-w-[60vw] md:max-w-[30vw] max-h-[40vh] border-[5px] border-[#588c65] rounded-xl" />
+                <img src={imageUrls[element.message]} alt="Message Image" className="max-w-[60vw] md:max-w-[30vw] max-h-[40vh] rounded-xl" onClick={() => showImage(element.message)} />
               ) : (
                 <div className="flex justify-center items-center w-[60vw] md:w-[30vw] h-80 border-[5px] border-[#588c65] bg-[#588c65] rounded-xl"><div className="loader"></div></div>
               )}
@@ -178,9 +178,9 @@ function ChatComponent({ friend, chatUid }: { friend: string, chatUid: any }) {
         }
         else if (isImgUrl(element.message) == "video") {
           return (
-            <li key={index} className="flex flex-row flex-wrap w-full">
+            <li key={index} className="flex flex-row flex-wrap w-full py-2">
               {imageUrls[element.message] ? (
-                <video className="max-w-[60vw] md:max-w-[30vw] max-h-80 border-[5px] border-[#588c65] rounded-xl" controls>
+                <video className="max-w-[60vw] md:max-w-[30vw] max-h-[40vh] rounded-xl" controls>
                   <source src={imageUrls[element.message]} />
                 </video>
               ) : (
@@ -191,7 +191,7 @@ function ChatComponent({ friend, chatUid }: { friend: string, chatUid: any }) {
         }
         else if (isImgUrl(element.message) == "audio") {
           return (
-            <li key={index} className="flex flex-row flex-wrap w-full justify-end">
+            <li key={index} className="flex flex-row flex-wrap w-full justify-end py-2">
               {imageUrls[element.message] ? (
                 <audio controls>
                   <source src={imageUrls[element.message]} />
@@ -217,6 +217,10 @@ function ChatComponent({ friend, chatUid }: { friend: string, chatUid: any }) {
     else if (/\.(mp3|wav)$/.test(url)) {
       return "audio";
     }
+  }
+
+  const showImage = (image: string) => {
+    { (image != "undefined") ? setImagePreviewSrc(imageUrls[image]) : "undefined" }
   }
 
   const sendImage = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -246,19 +250,23 @@ function ChatComponent({ friend, chatUid }: { friend: string, chatUid: any }) {
 
   return (
     <div className="flex flex-col w-full h-full">
+      <div onClick={() => setImagePreviewSrc("undefined")}>
+        <ImagePreview image={String(ImagePreviewSrc)}></ImagePreview>
+      </div>
       <div className="h-20 w-full flex items-center justify-between border-b-[1px] border-[#4f4f58] border-opacity-60 p-5">
         <div className="flex flex-row justify-center items-center gap-5">
           <img src={profile} className="w-12 h-12 object-cover rounded-md" />
-          <a className="text-white text-xl">{username}</a>
+          <a className="text-white text-xl w-40 truncate">{username}</a>
         </div>
         <button onClick={back} className="md:hidden bg-[#588c65] p-2 px-5 rounded-md">
           Back
         </button>
       </div>
 
-      <div className="h-full w-full overflow-auto">
-        <ul className="flex flex-col gap-3 w-full h-full overflow-auto p-5">
-          {renderMessages}
+      <div className="h-full w-full overflow-x-hidden px-5">
+        <ul className="flex flex-col w-full h-full">
+          {messages.length != 0 ? renderMessages : <div className="w-full h-full flex justify-center items-center text-center text-xl md:text-2xl"><h1 className="text-gray-400">Start the conversation with a friendly <b>hello</b>!</h1>
+          </div>}
           <div ref={messagesList} />
         </ul>
       </div>
@@ -302,7 +310,7 @@ function ChatComponent({ friend, chatUid }: { friend: string, chatUid: any }) {
           </svg>
         </button>
       </div>
-    </div>
+    </div >
   );
 }
 
