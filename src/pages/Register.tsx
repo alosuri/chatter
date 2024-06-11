@@ -20,7 +20,7 @@ export default function Login() {
   useEffect(() => {
     onAuthStateChanged(auth, (user) => {
       if (user) {
-        navigate("/chatter");
+        navigate("/");
       }
     });
   }, []);
@@ -74,7 +74,7 @@ export default function Login() {
         await createUserDoc(user.uid, target.username.value, target.email.value, photoURL);
       }
 
-      navigate("/chatter");
+      navigate("/");
     } catch (error) {
       alert(error);
     }
@@ -121,7 +121,7 @@ export default function Login() {
             />
           </div>
           <input type="file" name="file" onChange={handleChange} required />
-          <Link to={"/chatter/login"} className="text-[#00bd7e]">
+          <Link to={"/login"} className="text-[#00bd7e]">
             Already have an account? Click here!
           </Link>
           <button
